@@ -178,12 +178,16 @@ class Meter:
         try:
             if dtype == registerDataType.FLOAT32:
                 builder.add_32bit_float(data)
+            elif dtype == registerDataType.FLOAT16:
+                builder.add_16bit_float(data)
             elif dtype == registerDataType.INT32:
                 builder.add_32bit_int(data)
             elif dtype == registerDataType.UINT32:
                 builder.add_32bit_uint(data)
             elif dtype == registerDataType.INT16:
-                builder.add_16bit_int(data)
+                builder.add_16bit_int(int(data))
+            elif dtype == registerDataType.UINT16:
+                builder.add_16bit_uint(int(data))
             else:
                 raise NotImplementedError(dtype)
         except NotImplementedError:
@@ -195,12 +199,16 @@ class Meter:
         try:
             if dtype == registerDataType.FLOAT32:
                 return vtype(data.decode_32bit_float())
+            elif dtype == registerDataType.FLOAT16:
+                return vtype(data.decode_16bit_float())
             elif dtype == registerDataType.INT32:
                 return vtype(data.decode_32bit_int())
             elif dtype == registerDataType.UINT32:
                 return vtype(data.decode_32bit_uint())
             elif dtype == registerDataType.INT16:
                 return vtype(data.decode_16bit_int())
+            elif dtype == registerDataType.UINT16:
+                return vtype(data.decode_16bit_uint())
             else:
                 raise NotImplementedError(dtype)
         except NotImplementedError:
@@ -296,9 +304,9 @@ class Meter:
             raise KeyError(key)
 
         if scaling:
-            return self._read(self.registers[key]) * self.get_scaling(key)
+            return round(self._read(self.registers[key]) * self.get_scaling(key),4)
         else:
-            return self._read(self.registers[key])
+            return round(self._read(self.registers[key]),4)
 
     def write(self, key, data):
         if key not in self.registers:
@@ -306,7 +314,7 @@ class Meter:
 
         return self._write(self.registers[key], data / self.get_scaling(key))
 
-    def read_all(self, rtype=registerType.INPUT, scaling=False):
+    def read_all(self, rtype=registerType.HOLDING, scaling=False):
         registers = {k: v for k, v in self.registers.items() if (v[2] == rtype)}
         results = {}
 

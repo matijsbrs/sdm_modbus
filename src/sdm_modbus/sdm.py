@@ -1,5 +1,5 @@
-from sdm_modbus import meter
-
+from src.sdm_modbus import meter
+# import meter
 
 class SDM(meter.Meter):
     pass
